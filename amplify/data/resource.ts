@@ -7,11 +7,26 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.owner()]),
+  Temperature: a.customType({
+    value: a.integer(),
+    unit: a.string(),
+  }),
+  getTemperature: a.query()
+    .arguments({ city: a.string() })
+    .returns(a.ref('Temperature'))
+    .authorization((allow) => allow.authenticated())
+    .handler(a.handler.custom({ entry: './get-temperature.js' })),
+
+  pirateChat: a.conversation({
+    aiModel: a.aiModel.anthropic.claude3Haiku(),
+    systemPrompt: 'You are a helpful chatbot that responds in the voice and tone of a pirate. Respond in 20 words or less.',
+    tools: [
+      {
+        query: a.ref('getTemperature'),
+        description: 'Provides the current temperature for a given city.'
+      },
+    ],
+  }),
 });
 
 
