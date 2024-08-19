@@ -6,27 +6,22 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
-const schema = a.schema({
-  Temperature: a.customType({
-    value: a.integer(),
-    unit: a.string(),
-  }),
-  getTemperature: a.query()
-    .arguments({ city: a.string() })
-    .returns(a.ref('Temperature'))
-    .authorization((allow) => allow.authenticated())
-    .handler(a.handler.custom({ entry: './get-temperature.js' })),
-
-  pirateChat: a.conversation({
+const schema = a.schema({   
+  generateRecipe: a.generation({
     aiModel: a.aiModel.anthropic.claude3Haiku(),
-    systemPrompt: 'You are a helpful chatbot that responds in the voice and tone of a pirate. Respond in 20 words or less.',
-    tools: [
-      {
-        query: a.ref('getTemperature'),
-        description: 'Provides the current temperature for a given city.'
-      },
-    ],
-  }),
+    systemPrompt: 'You are a helpful assistant that generates recipes.',
+  })
+    .arguments({
+      description: a.string(),
+    })
+    .returns(
+      a.customType({
+        name: a.string(),
+        ingredients: a.string().array(),
+        instructions: a.string(),
+      })
+    )
+    .authorization((allow) => allow.authenticated())
 });
 
 
